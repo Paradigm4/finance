@@ -367,7 +367,7 @@ seek="project(cross_join($trades2 as x, events as y), x.count)"
 merged="merge(project(apply($trades, count, uint64(null)),count), $seek)"
 
 # Apply the time coordinate to a string value called 'p' -- used in a very tricky
-# procedure to find at most the previous known values at each point.
+# procedure to find the previous known value at each point.
 merged="apply($merged, time, string(TIMESTAMP)+',')"
 q1="variable_window($merged, TIMESTAMP, 1, 0, sum(time) as p)"
 q2="cross_join($q1 as x, events as y, x.TIMESTAMP, y.TIMESTAMP)"
