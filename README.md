@@ -292,3 +292,11 @@ Consider the following tables (1-d SciDB arrays, dimensioned along time):
 <tr><td>1<td>50.00<td><td>3<td>split
 <tr><td>5<td>25.70<td><td><td>
 </table>
+The combined table we desire in this example looks like:
+<table>
+<tr><td colspan="3">Combined
+<tr><td>Time<td>Price<td>Event
+<tr><td>1<td>50.00<td>
+<tr><td>3<td>50.00<td>split
+<tr><td>5<td>25.70<td>
+</table>
