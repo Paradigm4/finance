@@ -126,14 +126,11 @@ iquery -aq "op_count(trades)"
 
 SciDB can quickly filter data along the coordinate axes using the `between`
 and `cross_join` operators.
-
 Use the `filter` operator to filter on attribute values or on arbitrary
 expressions involving attributes and coordinates.
-
 Examples follow.
 
-#### Use between to select all trades between 11am and 1pm, and count the
-result.
+#### Use between to select all trades between 11am and 1pm, and count the result.
 
 The "TIMESTAMP" coordinate axis is specified in seconds from midnight, so
 we need to translate 11am and 1pm into those coordinates: 11am = 11&#215;3600 = 39600
