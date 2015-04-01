@@ -341,10 +341,9 @@ The task of this example is to join the trades and events arrays, filling
 forward trade data as required at each event timestamp.
 
 The fill-forward proceeds by building a lattice of the missing points as well
-as the previous and following few known time points, nullifying the missing
-values (converting them from empty cells to null-valued cells), and then
-filling forward data to replace null values using the SciDB `cumulate`
-operator.
+as the previous known time point, nullifying the missing values (converting
+them from empty cells to null-valued cells), and then filling forward data to
+replace null values using the SciDB `cumulate` operator.
 
 The example below builds this process up using shell variables one step at a
 time to simplify the presentation.  We also project down to just the PRICE
