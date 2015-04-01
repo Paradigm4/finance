@@ -1,5 +1,9 @@
 # Basic financial time series SciDB examples
 
+This note describes basic time series operation in SciDB using simple examples
+from finance. You can follow along with your own SciDB deployment by copying
+and pasting all the examples.
+
 ## Equity trade data examples
 
 This section covers efficiently loading data into SciDB from delimited text
@@ -100,3 +104,29 @@ iquery -aq "op_count(trades)"
 {i} count
 {0} 3871197
 ```
+
+
+###  Filtering data
+
+SciDB can quickly fliter data along the coordinate axes using the `between`
+and `cross_join` operators.
+
+Use the `filter` operator to filter on attribute values or on arbitrary
+expressions involving attributes and coordinates.
+
+Examples follow.
+
+#### Use between to select all trades between 11am and 1pm, and count the
+result.
+
+The "TIMESTAMP" coordinate axis is specified in seconds from midnight, so
+we need to translate 11am and 1pm into those coordinates: 11am = 11&#215;3600 = 39600
+and 1pm = 13&#215;3600=46800. The query is
+```
+iquery -aq "op_count(between(trades, null,null,39600,  null,null,46800))"
+{i} count
+{0} 906214
+```
+Note that `between` is inclusive.
+
+
