@@ -325,7 +325,7 @@ The combined table we desire in this example looks like:
 
 SciDB is able to produce this kind of join efficiently and in parallel. But the
 query is a bit complicated. The example begins by creating an example auxiliary
-"event" array that contains a few 'events' and time points of interest. This
+event array that contains a few 'events' and time points of interest. This
 array could just as easily be two-dimensional (or higher) with symbol-specific
 events, but we keep it simple here to illustrate the key ideas.
 ```
