@@ -285,9 +285,10 @@ of past-looking fuzzy join is sometimes called an "asof" join.
 Stated differently, missing values are imputed by piecewise constant
 interpolants as required.
 
-|Time |Price |    | Time | Event |
-|-----|------|    |------|-------|
-| 1   |  1.0 |    |  3   | split |
-| 5   |  0.6 |
-
-
+Consider the following tables (1-d SciDB arrays, dimensioned along time):
+<table>
+<tr><td colspan="2">Table A
+<tr><td>Time<td>Price
+<tr><td>1<td>50.00
+<tr><td>5<td>25.70
+</table>
