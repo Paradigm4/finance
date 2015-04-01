@@ -364,8 +364,9 @@ seek="project(cross_join($trades2 as x, events as y), x.count)"
 # Merge this back into the trades array
 merged="merge(project(apply($trades, count, uint64(null)),count), $seek)"
 
-# Apply the time coordinate to a string value called 'p' -- used in a very tricky
-# procedure to find the previous known value at each point.
+# Use variable_window, nth_tdv from load_tools, and cross_join
+# to find the last known time point before each desired point
+# for every symbol.
 merged="apply($merged, time, string(TIMESTAMP)+',')"
 q1="variable_window($merged, TIMESTAMP, 1, 0, sum(time) as p)"
 q2="cross_join($q1 as x, events as y, x.TIMESTAMP, y.TIMESTAMP)"
