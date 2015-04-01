@@ -296,14 +296,14 @@ iquery -aq "
 ```
 
 
-### "Asof" joins
+### Inexact temporal joins
 
 This section illustrates combining two arrays along their time axes and
-handling cases when time coordinates don't always line up. The following
-process looks up and fills in the last known data values as needed.  This kind
-of past-looking fuzzy join is sometimes called an "asof" join.
-Stated differently, missing values are imputed by piecewise constant
-interpolants as required.
+handling cases when time coordinates don't always line up. A procedure is
+outlined that looks up and fills in the last known data values at the
+mis-aligned time points.  This kind of past-looking fuzzy join is sometimes
+called an "asof" join.  Stated differently, missing values in the combined
+table are imputed by piecewise constant interpolants.
 
 SOME OF THE QUERIES IN THIS SECTION NEED COMPONENTS FROM THE PARADIGM4
 ENTERPRISE EXTENSIONS TO SCIDB. CONTACT info@paradigm4.com FOR MORE
@@ -409,7 +409,7 @@ deployment. It computes the last available price for all 6,840 equities at
 the specified time points. The query scales well with additional hardware.
 
 We can count up the imputed values at one of the time points. Note that
-only three equities had data at the first time point, but the asof array
+only three equities had data at the first time point, but the joined array
 contains values for every equity.
 ```
 iquery -aq "op_count(between(trades,null,null,64799,null,null,64799))"{i} count
