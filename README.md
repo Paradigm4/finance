@@ -244,10 +244,10 @@ avoid filter on coordinate indices when possible.
 ### Basic data aggregation
 
 The `redimension` operator is the best mechanism for computing grouped
-aggregate statistics in sparse SciDB arrays. Redimension allows us to specify
-reduction functions that process colliding data values when the coordinate
-system of an array is changed. The output of the reduction functions appear as
-new array attributes that contain the aggregated stats.
+statistics in sparse SciDB arrays. Redimension allows us to specify reduction
+functions that process colliding data values when the coordinate system of an
+array is changed. The output of the reduction functions appear as new array
+attributes that contain the aggregated stats.
 
 Here are a few examples:
 
@@ -275,6 +275,19 @@ iquery -aq "
 {75} 63.55,64.12,'K'
 ```
 
-### Moving windows
 
-### As-of joins
+### "Asof" joins
+
+This section illustrates combining two arrays along their time axes and
+handling cases when time coordinates don't always line up. The following
+process looks up and fills in the last known data values as needed.  This kind
+of past-looking fuzzy join is sometimes called an "asof" join.
+Stated differently, missing values are imputed by piecewise constant
+interpolants as required.
+
+|Time |Price |    | Time | Event |
+|-----|------|    |------|-------|
+| 1   |  1.0 |    |  3   | split |
+| 5   |  0.6 |
+
+
