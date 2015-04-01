@@ -409,12 +409,13 @@ the specified time points. The query scales well with additional hardware.
 
 We can count up the imputed values at one of the time points. Note that
 only three equities had data at the first time point, but the joined array
-contains values for every equity.
+contains values for every equity symbol (as expected).
 ```
-iquery -aq "op_count(between(trades,null,null,64799,null,null,64799))"{i} count
+iquery -aq "op_count(between(trades,null,null,64799, null,null,64799))"
+{i} count
 {0} 3
 
-iquery -aq "op_count(between(asof,null,64799,null,64799))"
+iquery -aq "op_count(between(asof,null,64799, null,64799))"
 {i} count
 {0} 6840
 ```
