@@ -62,7 +62,7 @@ to know at most how many columns are in the data (21), and how the data are
 delimited (by commas in this example).
 
 The output of parse is a virtual 22-attribute SciDB array with attribute names
-a0 to a20 corresponding to the indicated 21 data columns, plus an extra
+a0 to a20 corresponding to the specified 21 data columns, plus an extra
 attribute named "error" that indicates if any lines were short or long.
 The attributes all have type "string."
 
