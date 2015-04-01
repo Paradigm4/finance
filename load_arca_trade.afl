@@ -1,0 +1,35 @@
+load_library('load_tools');     --- for split, parse, and dcast
+load_library('superfunpack');   --- for strpftime and trivial hashing functions
+
+store(
+  redimension(
+    project(
+      apply(
+        parse(
+          split( '/tmp/data.csv', 'header=1' ),
+          'num_attributes=21', 'attribute_delimiter=,'),
+        MSG_TYPE, a0,
+        SEQUENCE, a1,
+        TRADE_DATE, a2,
+        TIMESTAMP, int64(strpftime(a3,'%H:%M:%S','%H'))*3600 +
+                   int64(strpftime(a3,'%H:%M:%S','%M'))*60 +
+                   int64(strpftime(a3,'%H:%M:%S','%S')),
+        ORD_REFERS, a4,
+        NASDAQID, a5,
+        SYMBOL, dumb_hash(a6),
+        VOLUME, dcast(a7, int64(null)),
+        PRICE, dcast(a8, float(null))),
+      MSG_TYPE,SEQUENCE,TRADE_DATE,TIMESTAMP,ORD_REFERS,NASDAQID,SYMBOL,VOLUME,PRICE),
+
+    <MSG_TYPE: string null,
+     SEQUENCE: string null,
+     TRADE_DATE: string null,
+     ORD_REFERS: string null,
+     NASDAQID: string null,
+     VOLUME: int64 null,
+     PRICE: float null>
+    [dummy=0:100000,10000,0,
+     SYMBOL=0:*,1,0,
+     TIMESTAMP=0:*,100000,0]
+  ),
+trades)
