@@ -150,7 +150,7 @@ The equity SYMBOL names are encoded as integers by a simple hash in this example
 value is known directly then use between similarly to the above example.
 
 Typically we need to consult a hash or auxiliary array to find coordinates for
-given SYMBOL NAMES. In that case, using a SciDB cross_join filter is a good way
+given SYMBOL names. In that case, using a SciDB cross_join filter is a good way
 to go. Cross_join is a database inner join operation between two arrays along a
 subset of their coordinate axes.
 
