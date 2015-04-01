@@ -288,7 +288,7 @@ interpolants as required.
 Consider the following tables (1-d SciDB arrays, dimensioned along time):
 <table>
 <tr><td colspan="2">Table A<td><td colspan="2">Table B
-<tr><td>Time<td>Price<td>&nbsp;<td>Time<td>Event
+<tr><td>Time<td>Price<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<td>Time<td>Event
 <tr><td>1<td>50.00<td><td>3<td>split
 <tr><td>5<td>25.70<td><td><td>
 </table>
