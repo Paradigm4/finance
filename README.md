@@ -305,6 +305,10 @@ of past-looking fuzzy join is sometimes called an "asof" join.
 Stated differently, missing values are imputed by piecewise constant
 interpolants as required.
 
+SOME OF THE QUERIES IN THIS SECTION NEED COMPONENTS FROM THE PARADIGM4
+ENTERPRISE EXTENSIONS TO SCIDB. CONTACT info@paradigm4.com FOR MORE
+INFORMATION.
+
 Consider the following tables (1-d SciDB arrays, dimensioned along time):
 <table>
 <tr><td colspan="2">Table A<td><td colspan="2">Table B
