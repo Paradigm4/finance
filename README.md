@@ -112,7 +112,7 @@ See the
 https://github.com/Paradigm4/finance/blob/master/load_arca_trade.afl
 script for details.
 
-This scipt takes a minute or two to load, redimension and store the data into
+This script takes a minute or two to load, redimension and store the data into
 a SciDB array named "trades." The final array has the same number of data
 points as lines in the original file, less the header line:
 ```
@@ -124,7 +124,7 @@ iquery -aq "op_count(trades)"
 
 ###  Filtering data
 
-SciDB can quickly fliter data along the coordinate axes using the `between`
+SciDB can quickly filter data along the coordinate axes using the `between`
 and `cross_join` operators.
 
 Use the `filter` operator to filter on attribute values or on arbitrary
@@ -158,7 +158,7 @@ to go. Cross_join is a database inner join operation between two arrays along a
 subset of their coordinate axes.
 
 The next short example builds a tiny 1-d array with a single entry that contains
-the coordinate idex of the symbol "AAPL":
+the coordinate index of the symbol "AAPL":
 ```
 iquery -aq "
   redimension(
@@ -190,7 +190,7 @@ remember when using cross_join is to keep the smaller array (in data size) on th
 right.
 
 
-#### Usig filter
+#### Using filter
 
 The SciDB `filter` operator can be used to perform arbitrary filtering
 operations on attribute values and on expressions involving coordinate values.
@@ -218,7 +218,7 @@ op_count(
 {0} 17899
 ```
 The next example repeats the above query using only filter operations to give
-you a sense of the performance advantage of usign cross_join and between. The
+you a sense of the performance advantage of using cross_join and between. The
 timings were performed on a single-computer SciDB configuration with 8
 instances.
 ```
@@ -349,7 +349,7 @@ filling forward data to replace null values using the SciDB `cumulate`
 operator.
 
 The example below builds this process up using shell variables one step at a
-time to simplify the presentation.  We also proje$ct down to just the PRICE
+time to simplify the presentation.  We also project down to just the PRICE
 attribute in the trades array, again just to simplify the presentation. The
 same process can be easily adapted to more attributes.
 ```
@@ -388,7 +388,7 @@ fill="project(join(merge($trades,$q4) as x, $q4 as y), x.PRICE)"
 fill="cumulate($fill, last_value(PRICE) as PRICE, TIMESTAMP)"
 
 # The shell variable $fill wraps all the previous steps up into one big query.
-# Store the joined event and imputed data into a new array named aso:
+# Store the joined event and imputed data into a new array named asof:
 iquery -naq "store(cross_join($fill as x1, events as y1, x1.TIMESTAMP, y1.TIMESTAMP), asof)"
 ```
 The output looks like:
