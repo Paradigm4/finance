@@ -320,9 +320,7 @@ The combined table we desire in this example looks like:
 <table>
 <tr><td colspan="3">Combined
 <tr><td>Time<td>Price<td>Event
-<tr><td>1<td>50.00<td>
 <tr><td>3<td>50.00<td>split
-<tr><td>5<td>25.70<td>
 </table>
 
 SciDB is able to produce this kind of join efficiently and in parallel. But the
