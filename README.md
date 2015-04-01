@@ -68,7 +68,7 @@ The attributes all have type "string."
 
 The `apply` operator creates new array attributes with more reasonable names,
 and converts the data types of some of them. In particular it creates an
-attribute names "TIMESTAMP" of type int64 that represents the number of seconds
+attribute "TIMESTAMP" of type int64 that represents the number of seconds
 past midnight of each datum (these data have second resolution). It also uses a
 trivial perfect hash from the superfunpack plugin called `dumb_hash` to convert
 symbol name to an int64 value. "PRICE" and "VOLUME" attributes are also converted
