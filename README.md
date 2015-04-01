@@ -33,7 +33,8 @@ https://github.com/Paradigm4/superfunpack  plugin for a few time and hash
 support functions.
 
 An example SciDB AFL-language load script is available in this project from
-https://github.com/Paradigm4/finance/load_arca_trade.afl  and can be
+https://github.com/Paradigm4/finance/blob/master/load_arca_trade.afl
+and can be
 run with the downloaded equity trade data as shown in the next example:
 ```
 rm -f /tmp/data.csv
@@ -83,4 +84,19 @@ deal with arbitrary-length symbol names (the trivial hash produces a sparse
 integer index set and can only hash names up to seven characters long). We use
 the hash approach in these examples to simplify the exposition.
 
+Finally, the script organizes a subset of the loaded and processed attributes
+into a 3-dimensional coordinate system indexed by "dummy," "SYMBOL," and
+"TIMESTAMP." The "dummy" coordinate axis is a special SciDB *synthetic
+dimension* that enumerates data that collide in the other coordinates.  This is
+important in these example data because more than one trade may be reported for
+a given symbol on a given second. An alternate approach to using a synthetic
+dimension is to make the exchange sequence number into a coordinate axis.
 
+This scipt takes a minute or two to load, redimension and store the data into
+a SciDB array named "trades." The final array has the same number of data
+points as lines in the original file, less the header line:
+```
+iquery -aq "op_count(trades)"
+{i} count
+{0} 3871197
+```
