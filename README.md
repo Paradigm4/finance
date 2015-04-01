@@ -95,6 +95,22 @@ dimension* that enumerates data that collide in the other coordinates.  This is
 important in these example data because more than one trade may be reported for
 a given symbol on a given second. An alternate approach to using a synthetic
 dimension is to make the exchange sequence number into a coordinate axis.
+The schema of the output trades array is:
+```
+    <MSG_TYPE: string null,
+     SEQUENCE: string null,
+     TRADE_DATE: string null,
+     ORD_REFERS: string null,
+     NASDAQID: string null,
+     VOLUME: int64 null,
+     PRICE: float null>
+    [dummy=0:100000,10000,0,
+     SYMBOL=0:*,1,0,
+     TIMESTAMP=0:*,100000,0]
+```
+See the 
+https://github.com/Paradigm4/finance/blob/master/load_arca_trade.afl
+script for details.
 
 This scipt takes a minute or two to load, redimension and store the data into
 a SciDB array named "trades." The final array has the same number of data
@@ -201,4 +217,64 @@ op_count(
 {i} count
 {0} 17899
 ```
+The next example repeats the above query using only filter operations to give
+you a sense of the performance advantage of usign cross_join and between. The
+timings were performed on a single-computer SciDB configuration with 8
+instances.
+```
+time of the previous query:
+real    0m0.154s
+user    0m0.019s
+sys     0m0.007s
 
+# Now just using filter:
+time iquery -aq "
+op_count( filter(trades, SYMBOL=1280328001 and PRICE < 430.00))"
+{i} count
+{0} 17899
+
+real    0m0.803s
+user    0m0.018s
+sys     0m0.008s
+```
+Both examples run quickly for this tiny example, but it's still wise to
+avoid filter on coordinate indices when possible.
+
+
+### Basic data aggregation
+
+The `redimension` operator is the best mechanism for computing grouped
+aggregate statistics in sparse SciDB arrays. Redimension allows us to specify
+reduction functions that process colliding data values when the coordinate
+system of an array is changed. The output of the reduction functions appear as
+new array attributes that contain the aggregated stats.
+
+Here are a few examples:
+
+#### Compute the min and max price for every symbol
+We pipe the output through head because there are thousands of symbols, and
+also apply a string representation of the SYMBOL index to see the symbol names.
+```
+iquery -aq "
+  apply(
+    redimension(trades,
+      <low: float null, high: float null> [SYMBOL=0:*,1000,0],
+       min(PRICE) as low, max(PRICE) as high),
+    name,
+    dumb_unhash(SYMBOL))" | head 
+
+{SYMBOL} low,high,name
+{65} 40.65,41.46,'A'
+{66} 27.85,28.24,'B'
+{67} 42.16,42.98,'C'
+{68} 58.84,59.56,'D'
+{69} 45.02,45.72,'E'
+{70} 12.605,12.775,'F'
+{71} 18.1,18.275,'G'
+{72} 41.49,42.19,'H'
+{75} 63.55,64.12,'K'
+```
+
+### Moving windows
+
+### As-of joins
