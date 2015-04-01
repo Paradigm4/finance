@@ -130,3 +130,75 @@ iquery -aq "op_count(between(trades, null,null,39600,  null,null,46800))"
 Note that `between` is inclusive.
 
 
+#### Use cross_join to filter on SYMBOL coordinates
+
+The equity SYMBOL names are encoded as integers by a simple hash in this example
+(or more generally enumerated in an auxiliary array). When a SYMBOL coordinate
+value is known directly then use between similarly to the above example.
+
+Typically we need to consult a hash or auxiliary array to find coordinates for
+given SYMBOL NAMES. In that case, using a SciDB cross_join filter is a good way
+to go. Cross_join is a database inner join operation between two arrays along a
+subset of their coordinate axes.
+
+The next short example builds a tiny 1-d array with a single entry that contains
+the coordinate idex of the symbol "AAPL":
+```
+iquery -aq "
+  redimension(
+    build(<SYMBOL:int64>[i=0:0,1,0], dumb_hash('AAPL')),
+   <i:int64>[SYMBOL=0:*,100000,0])"
+
+{SYMBOL}     i
+{1280328001} 0
+```
+We can use `cross_join` to join this tiny along the SYMBOL axis with the main
+trades array, effectively filtering on all trades with SYMBOL=AAPL (we count
+the result):
+```
+iquery -aq "
+op_count(
+  cross_join(
+    trades as x,
+    redimension(
+      build(<SYMBOL:int64>[i=0:0,1,0], dumb_hash('AAPL')),
+      <i:int64>[SYMBOL=0:*,100000,0]) as y,
+    x.SYMBOL, y.SYMBOL))"
+
+{i} count
+{0} 20530
+```
+The example data contain 20,530 AAPL trades. Note that the cross_join filtering
+array may contain any number of symbol indices. An important tip to
+remember when using cross_join is to keep the smaller array (in data size) on the
+right.
+
+
+#### Usig filter
+
+The SciDB `filter` operator can be used to perform arbitrary filtering
+operations on attribute values and on expressions involving coordinate values.
+Keep in mind that to achieve this flexibility, filter needs to traverse all the
+data, an operation that occurs in parallel but can still be considerably more
+expensive than filtering along coordinate values with `between` or
+`cross_join`.
+
+The following example counts the number of trades of AAPL that were below
+430.00. We first use the above `cross_join` operation to cut the data size
+down, then use the `filter` operator.
+```
+iquery -aq "
+op_count(
+  filter(
+    cross_join(
+      trades as x,
+      redimension(
+        build(<SYMBOL:int64>[i=0:0,1,0], dumb_hash('AAPL')),
+        <i:int64>[SYMBOL=0:*,100000,0]) as y,
+      x.SYMBOL, y.SYMBOL),
+    PRICE < 430.00))"
+
+{i} count
+{0} 17899
+```
+
