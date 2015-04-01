@@ -243,7 +243,27 @@ avoid filter on coordinate indices when possible.
 
 ### Basic data aggregation
 
-The `redimension` operator is the best mechanism for computing grouped
+SciDB has two alternative methods for computing grouped statistics,
+`redimension` and `aggregate`. The latter approach is often best for fast
+counts of items when the data are dense.
+
+#### Count the number of unique symbols in the trades array
+```
+# Using 'aggregate'
+iquery -aq "op_count(aggregate(trades, count(*) as count, SYMBOL))"
+{i} count
+{0} 6840
+
+# Using 'redimension' (a bit slower in this example)
+iquery -aq "
+  op_count(
+    redimension(trades, <count:uint64 null>[SYMBOL=0:*,100000,0],
+                count(*) as count))"
+{i} count
+{0} 6840
+```
+
+The `redimension` operator is the overall best mechanism for computing grouped
 statistics in sparse SciDB arrays. Redimension allows us to specify reduction
 functions that process colliding data values when the coordinate system of an
 array is changed. The output of the reduction functions appear as new array
@@ -300,3 +320,99 @@ The combined table we desire in this example looks like:
 <tr><td>3<td>50.00<td>split
 <tr><td>5<td>25.70<td>
 </table>
+
+SciDB is able to produce this kind of join efficiently and in parallel. But the
+query is a bit complicated. The example begins by creating an example auxiliary
+"event" array that contains a few 'events' and time points of interest. This
+array could just as easily be two-dimensional (or higher) with symbol-specific
+events, but we keep it simple here to illustrate the key ideas.
+```
+iquery -aq "
+store(
+  redimension(
+    build(<TIMESTAMP:int64>[event=0:1,2,0], '{0}[(64799),(67211)]',true),
+    <event:int64>[TIMESTAMP=0:*,100000,0]),
+  events)"
+```
+
+The task of this example is to join the trades and events arrays, filling
+forward trade data as required at each event timestamp.
+
+The fill-forward proceeds by building a lattice of the missing points as well
+as the previous and following few known time points, nullifying the missing
+values (converting them from empty cells to null-valued cells), and then
+filling forward data to replace null values using the SciDB `cumulate`
+operator.
+
+The example below builds this process up using shell variables one step at a
+time to simplify the presentation.  We also proje$ct down to just the PRICE
+attribute in the trades array, again just to simplify the presentation. The
+same process can be easily adapted to more attributes.
+```
+# Project down to the PRICE attribute, and aggregate out the synthetic
+# dimension by taking max(PRICE) over that axis (they all should be the same
+# anyway, otherwise arbitrage).
+trades="redimension(trades, <PRICE:float null>[SYMBOL=0:*,1,0,TIMESTAMP=0:*,100000,0], max(PRICE) as PRICE)"
+
+# Build an array that looks like trades, but with the TIMESTAMP coordinates from
+# the events array.
+trades2="aggregate($trades, count(*) as count, SYMBOL)"
+seek="project(cross_join($trades2 as x, events as y), x.count)"
+
+# Merge this back into the trades array
+merged="merge(project(apply($trades, count, uint64(null)),count), $seek)"
+
+# Apply the time coordinate to a string value called 'p' -- used in a very tricky
+# procedure to find at most the previous known values at each point.
+merged="apply($merged, time, string(TIMESTAMP)+',')"
+q1="variable_window($merged, TIMESTAMP, 1, 0, sum(time) as p)"
+q2="cross_join($q1 as x, events as y, x.TIMESTAMP, y.TIMESTAMP)"
+q3="
+apply(cross_join($q2,build(<b:bool>[i=0:1,2,0],false)),v,
+  iif(i=0,dcast(nth_tdv(p,0,','),int64(null)), 
+  iif(i=1,dcast(nth_tdv(p,1,','),int64(null)), null)))"
+q4="cast(
+      redimension(apply($q3, PRICE, float(null)),
+        <PRICE: float null>
+        [SYMBOL=0:*,1,0,
+         v=0:*,100000,0]),
+      <PRICE: float null>
+      [SYMBOL=0:*,1,0,
+       TIMESTAMP=0:*,100000,0])"
+# Fill forward missing data as required.
+fill="project(join(merge($trades,$q4) as x, $q4 as y), x.PRICE)"
+fill="cumulate($fill, last_value(PRICE) as PRICE, TIMESTAMP)"
+
+# The shell variable $fill wraps all the previous steps up into one big query.
+# Store the joined event and imputed data into a new array named aso:
+iquery -naq "store(cross_join($fill as x1, events as y1, x1.TIMESTAMP, y1.TIMESTAMP), asof)"
+```
+The output looks like:
+```
+iquery -aq "apply(asof, name, dumb_unhash(SYMBOL))" | head
+{65,64799} 41.42,0,'A'
+{65,67211} 41.42,1,'A'
+{66,64799} 28.23,0,'B'
+{66,67211} 28.23,1,'B'
+{67,64799} 42.75,0,'C'
+{67,67211} 42.72,1,'C'
+{68,64799} 59.35,0,'D'
+{68,67211} 59.35,1,'D'
+{69,64799} 45.6,0,'E'
+```
+
+The query takes less than a minute on a single-computer workstation SciDB
+deployment. It computes the last available price for all 6,840 equities at
+the specified time points. The query scales well with additional hardware.
+
+We can count up the imputed values at one of the time points. Note that
+only three equities had data at the first time point, but the asof array
+contains values for every equity.
+```
+iquery -aq "op_count(between(trades,null,null,64799,null,null,64799))"{i} count
+{0} 3
+
+iquery -aq "op_count(between(asof,null,64799,null,64799))"
+{i} count
+{0} 6840
+```
