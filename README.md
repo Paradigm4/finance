@@ -1,4 +1,5 @@
-# Basic financial time series SciDB examples
+# Note: this is kind of old. See the https://github.com/paradigm4/TAQ examples for more recent examples.
+
 
 This note describes basic time series operation in SciDB using simple examples
 from finance. You can follow along with your own SciDB deployment by copying
